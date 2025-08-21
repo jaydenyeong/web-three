@@ -3,10 +3,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
+const postRoutes = require("./routes/post");
 const auth = require("./middleware/auth");
 
 dotenv.config();
-
 
 const app = express();
 const PORT = 5000;
@@ -15,14 +15,12 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-// Mount auth routes under /api/auth
+// Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/profile", require("./routes/profile"));
-app.use("/api/register", require("./routes/register"));
-app.use("/api/login", require("./routes/login"));
+app.use("/api/posts", postRoutes);
 
 
-// Protected profile route
+// Protected profile route (extra check)
 app.get("/api/profile", auth, async (req, res) => {
   const User = require("./models/User");
   try {
@@ -34,7 +32,6 @@ app.get("/api/profile", auth, async (req, res) => {
   }
 });
 
-
 // MongoDB connection
 mongoose.connect("mongodb://127.0.0.1:27017/webthree")
   .then(() => console.log("✅ MongoDB connected"))
@@ -44,43 +41,7 @@ app.get("/api/test", (req, res) => {
   res.json({ message: "Hello from the backend 👋" });
 });
 
-
-let users = [];
-app.post("/api/register", (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password required" });
-  }
-
-  // Check if user exists
-  const existing = users.find((u) => u.email === email);
-  if (existing) {
-    return res.status(400).json({ error: "User already exists" });
-  }
-
-  // Save user (in memory for now)
-  users.push({ email, password });
-  res.json({ message: "✅ Registration successful" });
-});
-
-app.post("/api/login", (req, res) => {
-  const { email, password } = req.body;
-
-  const user = users.find((u) => u.email === email && u.password === password);
-
-  if (!user) {
-    return res.status(401).json({ error: "Invalid credentials" });
-  }
-
-  res.json({ message: "✅ Login successful" });
-});
-
-
-
-
-
-
+// Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });

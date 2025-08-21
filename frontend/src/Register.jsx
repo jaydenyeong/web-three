@@ -1,38 +1,39 @@
 import { useState } from "react";
 
-function App() {
+function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleRegister = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const res = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
-      if (data.token) {
-        setMessage("✅ Registered successfully, token stored");
-        localStorage.setItem("token", data.token); // save token
+
+      if (res.ok) {
+        setMessage(`✅ Registered! User ID: ${data.userId}`);
       } else {
-        setMessage("⚠️ Registration failed: " + (data.error || "Unknown error"));
+        setMessage(`❌ Error: ${data.error || "Registration failed"}`);
       }
     } catch (err) {
-      setMessage("❌ Backend not reachable");
+      setMessage("⚠️ Could not connect to backend");
     }
   };
 
   return (
     <div>
-      <h1>Crypto Savings Dashboard</h1>
-
-      <form onSubmit={handleRegister}>
+      <h2>Register</h2>
+      <form onSubmit={handleSubmit}>
         <input
           type="email"
-          placeholder="Email"
+          placeholder="Enter email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -40,7 +41,7 @@ function App() {
         <br />
         <input
           type="password"
-          placeholder="Password"
+          placeholder="Enter password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -48,10 +49,9 @@ function App() {
         <br />
         <button type="submit">Register</button>
       </form>
-
       <p>{message}</p>
     </div>
   );
 }
 
-export default App;
+export default Register;
