@@ -1,57 +1,27 @@
-import { useState } from "react";
+  import { Routes, Route, Link } from "react-router-dom"
+  import Login from "./pages/Login"
+  import Register from "./pages/Register"
+  import Posts from "./pages/Posts"
 
-function App() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (data.token) {
-        setMessage("✅ Registered successfully, token stored");
-        localStorage.setItem("token", data.token); // save token
-      } else {
-        setMessage("⚠️ Registration failed: " + (data.error || "Unknown error"));
-      }
-    } catch (err) {
-      setMessage("❌ Backend not reachable");
-    }
-  };
-
+  function App() {
   return (
     <div>
-      <h1>Crypto Savings Dashboard</h1>
+      {/* Simple Nav Bar */}
+      <nav style={{ display: "flex", gap: "1rem", padding: "1rem", background: "#eee" }}>
+        <Link to="/login">Login</Link>
+        <Link to="/register">Register</Link>
+        <Link to="/posts">Posts</Link>
+      </nav>
 
-      <form onSubmit={handleRegister}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <br />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <br />
-        <button type="submit">Register</button>
-      </form>
-
-      <p>{message}</p>
+      {/* Define Routes */}
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/posts" element={<Posts />} />
+        <Route path="*" element={<Login />} />
+      </Routes>
     </div>
-  );
-}
+  )
+  }
 
-export default App;
+  export default App

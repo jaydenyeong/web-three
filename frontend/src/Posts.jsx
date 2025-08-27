@@ -1,82 +1,68 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 function Posts() {
   const [posts, setPosts] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [message, setMessage] = useState("");
 
-  // Fetch posts on load
+  // Fetch posts
   useEffect(() => {
     const fetchPosts = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/posts", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setPosts(data);
-        }
-      } catch (err) {
-        setMessage("❌ Could not fetch posts");
-      }
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch("http://localhost:5000/api/posts", {
+        headers: { "x-auth-token": token },
+      });
+      const data = await res.json();
+      setPosts(data);
     };
     fetchPosts();
   }, []);
 
-  // Handle post submission
+  // Create a post
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/posts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ title, content }),
-      });
-      const data = await res.json();
-      if (data._id) {
-        setPosts([data, ...posts]); // add new post to top
-        setTitle("");
-        setContent("");
-        setMessage("✅ Post created!");
-      } else {
-        setMessage("⚠️ Failed to create post");
-      }
-    } catch (err) {
-      setMessage("❌ Backend not reachable");
-    }
+    const token = localStorage.getItem("token");
+
+    const res = await fetch("http://localhost:5000/api/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-auth-token": token,
+      },
+      body: JSON.stringify({ title, content }),
+    });
+
+    const newPost = await res.json();
+    setPosts([...posts, newPost]); // update list
+    setTitle("");
+    setContent("");
   };
 
   return (
     <div>
-      <h2>Your Posts</h2>
+      <h2>My Posts</h2>
 
+      {/* New Post Form */}
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Post title"
+          placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
         />
-        <br />
         <textarea
-          placeholder="Post content"
+          placeholder="Content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
-        />
-        <br />
+        ></textarea>
         <button type="submit">Add Post</button>
       </form>
 
-      <p>{message}</p>
-
+      {/* Posts List */}
       <ul>
         {posts.map((p) => (
           <li key={p._id}>
