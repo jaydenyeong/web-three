@@ -1,35 +1,31 @@
 import { useEffect, useState } from "react"
+import axios from "axios"
 
 function Posts() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/posts")
-        if (!res.ok) throw new Error("Failed to fetch posts")
-        const data = await res.json()
-        setPosts(data)
+        const res = await axios.get("http://localhost:5000/api/posts")
+        setPosts(res.data)
       } catch (err) {
-        setError(err.message)
+        console.error(err)
       } finally {
         setLoading(false)
       }
     }
-
     fetchPosts()
   }, [])
 
-  if (loading) return <p>Loading...</p>
-  if (error) return <p style={{ color: "red" }}>Error: {error}</p>
+  if (loading) return <h2>Loading...</h2>
 
   return (
-    <div>
+    <div style={{ padding: "1rem" }}>
       <h1>Posts</h1>
       {posts.length === 0 ? (
-        <p>No posts yet</p>
+        <p>No posts found</p>
       ) : (
         <ul>
           {posts.map((post) => (

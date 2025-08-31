@@ -1,11 +1,13 @@
-const dotenv = require("dotenv");
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const authRoutes = require("./routes/auth");
-const postRoutes = require("./routes/Post");
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
 
-const auth = require("./middleware/auth");
+import authRoutes from "./routes/auth.js";
+import postRoutes from "./routes/Post.js";
+import dashboardRoutes from "./routes/dashboard.js";
+import auth from "./middleware/auth.js";
+
 
 dotenv.config();
 
@@ -20,7 +22,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
-
+app.use("/api/dashboard", dashboardRoutes);
 
 
 

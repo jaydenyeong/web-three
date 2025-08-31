@@ -60,6 +60,16 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const posts = await Post.find(); // assuming Post is your model
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 // GET a single post by ID
 router.get("/:id", async (req, res) => {
   try {
