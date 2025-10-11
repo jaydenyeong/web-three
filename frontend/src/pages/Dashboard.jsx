@@ -1,63 +1,69 @@
 import { useEffect, useState } from "react"
 
 function Dashboard() {
-  const [balance, setBalance] = useState(0)
+  const [data, setData] = useState(null)
   const [transactions, setTransactions] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const token = localStorage.getItem("token")
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token")
-
-        // Fetch balance
         const balanceRes = await fetch("http://localhost:5000/api/dashboard/balance", {
           headers: { Authorization: `Bearer ${token}` },
         })
+        if (!balanceRes.ok) throw new Error("Failed to fetch balance")
         const balanceData = await balanceRes.json()
-        setBalance(balanceData.balance)
+        setData(balanceData)
 
-        // Fetch transactions
-        const txnRes = await fetch("http://localhost:5000/api/dashboard/transactions", {
+        const txRes = await fetch("http://localhost:5000/api/dashboard/transactions", {
           headers: { Authorization: `Bearer ${token}` },
         })
-        const txnData = await txnRes.json()
-        setTransactions(txnData)
-
-        setLoading(false)
+        if (!txRes.ok) throw new Error("Failed to fetch transactions")
+        const txData = await txRes.json()
+        setTransactions(txData)
       } catch (err) {
-        console.error("Error fetching dashboard:", err)
+        setError(err.message)
       }
     }
 
     fetchData()
-  }, [])
+  }, [token])
 
-  if (loading) return <h2>Loading...</h2>
+  if (error) return <p style={{ color: "red" }}>❌ {error}</p>
+  if (!data) return <p>Loading dashboard...</p>
 
   return (
     <div style={{ padding: "1rem" }}>
-      <h1>Dashboard</h1>
-      <h2>Balance: ${balance}</h2>
+      <h1>💰 Dashboard</h1>
+      <h2>
+        {data.balance} {data.currency} ≈ ${data.usdValue.toFixed(2)} USD
+      </h2>
+      <p>Exchange Rate: 1 {data.currency} = ${data.usdRate}</p>
 
       <h3>Recent Transactions</h3>
       {transactions.length === 0 ? (
-        <p>No transactions yet</p>
+        <p>No transactions found</p>
       ) : (
-        <table border="1" cellPadding="5">
+        <table border="1" cellPadding="8">
           <thead>
             <tr>
-              <th>Date</th>
               <th>Type</th>
               <th>Amount</th>
+              <th>Currency</th>
+              <th>Status</th>
+              <th>Date</th>
             </tr>
           </thead>
           <tbody>
             {transactions.map((txn) => (
               <tr key={txn._id}>
-                <td>{new Date(txn.date).toLocaleString()}</td>
                 <td>{txn.type}</td>
                 <td>{txn.amount}</td>
+                <td>{txn.currency}</td>
+                <td>{txn.status}</td>
+                <td>{new Date(txn.createdAt).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
