@@ -17,10 +17,9 @@ const TransactionSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    currency: {
+    currency: [{
       type: String,
-      default: "USDT",
-    },
+    }],
     status: {
       type: String,
       enum: ["pending", "completed", "failed"],

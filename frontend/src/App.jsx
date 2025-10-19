@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Posts from "./pages/Posts";
 import Dashboard from "./pages/Dashboard"
+import SendPayment from "./pages/SendPayment"
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Link to="/register">Register</Link>
         <Link to="/posts">Posts</Link>
         <Link to="/dashboard">Dashboard</Link>
+        <Link to="/send">Send Payment</Link>
       </nav>
 
       {/* Routes */}
@@ -21,6 +23,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/posts" element={<Posts />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/send" element={<SendPayment />} />
         <Route path="*" element={<Login />} />
       </Routes>
     </div>

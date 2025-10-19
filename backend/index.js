@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/Post.js";
 import dashboardRoutes from "./routes/dashboard.js";
+import transactionRoutes from "./routes/transactions.js";
 import auth from "./middleware/auth.js";
 
 
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/transactions", transactionRoutes);
 
 
 

@@ -8,8 +8,7 @@ const auth = require("../middleware/auth");
 
 // REGISTER
 router.post("/register", async (req, res) => {
-  const { email, password } = req.body;
-
+  const { username, email, password } = req.body; // <--- include username
   try {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ error: "User already exists" });
@@ -17,13 +16,13 @@ router.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     user = new User({
+      username, // <--- add this
       email,
       password: hashedPassword,
     });
 
     await user.save();
 
-    // create JWT right after registration
     const payload = { user: { id: user.id } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 
