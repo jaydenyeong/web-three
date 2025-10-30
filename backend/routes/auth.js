@@ -61,10 +61,12 @@ router.post("/login", async (req, res) => {
 // PROTECTED PROFILE
 router.get("/profile", auth, async (req, res) => {
   try {
-    console.log("Decoded user:", req.user);  // <--- check this
+    console.log("Decoded user:", req.user); // shows { id: '...' }
     const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -72,7 +74,8 @@ router.get("/profile", auth, async (req, res) => {
 
 router.get("/me", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user).select("-password");
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
