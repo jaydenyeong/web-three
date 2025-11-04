@@ -1,42 +1,8 @@
 import { useEffect, useState } from "react"
 
 function Dashboard() {
-  const [data, setData] = useState({ balance: 0, transactions: [], prices: {} })
+  const [data, setData] = useState({ balance: 0, balanceUSD: 0, transactions: [], prices: {} })
   const [loading, setLoading] = useState(true)
-  const [amount, setAmount] = useState("")
-  const [action, setAction] = useState("deposit")
-
-  
-  const handleTransaction = async (e) => {
-    e.preventDefault()
-    if (!amount || amount <= 0) return alert("Enter a valid amount")
-
-    const token = localStorage.getItem("token")
-    const url =
-      action === "deposit"
-        ? "http://localhost:5000/api/dashboard/deposit"
-        : "http://localhost:5000/api/dashboard/withdraw"
-
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify({ amount, currency: "ETH" }),
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.msg || "Transaction failed")
-
-      alert(data.msg || "Transaction successful")
-      setAmount("")
-      fetchLiveData() // refresh dashboard
-    } catch (err) {
-      alert(err.message)
-    }
-  }
 
   const fetchLiveData = async () => {
     try {
@@ -55,47 +21,24 @@ function Dashboard() {
 
   useEffect(() => {
     fetchLiveData()
-    const interval = setInterval(fetchLiveData, 10000) // refresh every 10s
+    const interval = setInterval(fetchLiveData, 10000)
     return () => clearInterval(interval)
   }, [])
 
-  if (loading) return <p>Loading live data...</p>
+  if (loading) return <p>Loading dashboard...</p>
 
   return (
     <div style={{ padding: "2rem" }}>
       <h1>Crypto Dashboard</h1>
-      <p><strong>Total Balance:</strong> ${data.balance.toFixed(2)}</p>
+      <p><strong>Balance:</strong> {data.balance.toFixed(4)} {data.currency}</p>
+      <p><strong>Value (USD):</strong> ${data.balanceUSD.toFixed(2)}</p>
 
-      <h2>Prices (USD)</h2>
+      <h2>Crypto Prices (USD)</h2>
       <ul>
         {Object.entries(data.prices).map(([symbol, obj]) => (
-          <li key={symbol}>
-            {symbol.toUpperCase()}: ${obj.usd.toLocaleString()}
-          </li>
+          <li key={symbol}>{symbol.toUpperCase()}: ${obj.usd.toLocaleString()}</li>
         ))}
       </ul>
-
-      <h2>Make a Transaction</h2>
-        <form onSubmit={handleTransaction} style={{ marginBottom: "2rem" }}>
-          <select
-            value={action}
-            onChange={(e) => setAction(e.target.value)}
-            style={{ marginRight: "1rem" }}
-          >
-            <option value="deposit">Deposit</option>
-            <option value="withdraw">Withdraw</option>
-          </select>
-
-          <input
-            type="number"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            style={{ marginRight: "1rem" }}
-          />
-
-          <button type="submit">Submit</button>
-        </form>
 
       <h2>Recent Transactions</h2>
       {data.transactions.length === 0 ? (

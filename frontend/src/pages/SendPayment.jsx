@@ -1,57 +1,89 @@
 import { useState } from "react"
 
-function SendPayment() {
+function Transactions() {
+  const [action, setAction] = useState("deposit")
   const [amount, setAmount] = useState("")
-  const [currency, setCurrency] = useState("USDT")
-  const [message, setMessage] = useState("")
+  const [recipient, setRecipient] = useState("")
 
-  const handleSend = async (e) => {
+  const handleTransaction = async (e) => {
     e.preventDefault()
-    setMessage("")
+    if (!amount || amount <= 0) return alert("Enter a valid amount")
+
+    const token = localStorage.getItem("token")
+    let url = "http://localhost:5000/api/dashboard/deposit"
+
+    if (action === "withdraw") url = "http://localhost:5000/api/dashboard/withdraw"
+    else if (action === "transfer") url = "http://localhost:5000/api/dashboard/transfer"
+
+    const body =
+      action === "transfer"
+        ? { amount, currency: "ETH", recipientUsername: recipient }
+        : { amount, currency: "ETH" }
 
     try {
-      const token = localStorage.getItem("token")
-      const res = await fetch("http://localhost:5000/api/transactions/send", {
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer " + token,
         },
-        body: JSON.stringify({ amount: Number(amount), currency }),
+        body: JSON.stringify(body),
       })
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data.msg || "Transfer failed")
+      if (!res.ok) throw new Error(data.msg || "Transaction failed")
 
-      setMessage("✅ " + data.msg)
+      alert(data.msg || "Transaction successful")
       setAmount("")
+      setRecipient("")
     } catch (err) {
-      setMessage("❌ " + err.message)
+      alert(err.message)
     }
   }
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>Send Payment</h1>
-      <form onSubmit={handleSend}>
+      <h1>Make a Transaction</h1>
+
+      <form onSubmit={handleTransaction}>
+        <label>Action:</label>
+        <select
+          value={action}
+          onChange={(e) => setAction(e.target.value)}
+          style={{ marginRight: "1rem" }}
+        >
+          <option value="deposit">Deposit</option>
+          <option value="withdraw">Withdraw</option>
+          <option value="transfer">Transfer</option>
+        </select>
+
+        <br /><br />
+
+        {action === "transfer" && (
+          <>
+            <input
+              type="text"
+              placeholder="Recipient username"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              style={{ marginRight: "1rem" }}
+            />
+            <br /><br />
+          </>
+        )}
+
         <input
           type="number"
           placeholder="Amount"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          required
+          style={{ marginRight: "1rem" }}
         />
-        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-          <option value="USDT">USDT</option>
-          <option value="BTC">BTC</option>
-          <option value="ETH">ETH</option>
-        </select>
-        <button type="submit">Send</button>
-      </form>
 
-      {message && <p>{message}</p>}
+        <button type="submit">Submit</button>
+      </form>
     </div>
   )
 }
 
-export default SendPayment
+export default Transactions
